@@ -50,6 +50,8 @@ jobs:
     name: Run
     needs: [ test, dev ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download Go binary artifact
         uses: actions/download-artifact@v4
@@ -63,15 +65,8 @@ jobs:
       - name: Run Go binary
         run: ./build/hello
 
-
-      - uses: actions/checkout@v2
-      - name: 버전 정보 추출
-        run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-        id: extract_version_name       
-      - name: Release 생성 
-        uses: actions/create-release@v2
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with: 
-          tag_name: ${{ steps.extract_version_name.outputs.version }} 
-          release_name: ${{ steps.extract_version_name.outputs.version }} 
+      - uses: actions/checkout@v3
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release.tar.gz,foo/*.txt"
+          bodyFile: "body.md"
